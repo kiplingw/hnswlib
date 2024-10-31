@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <list>
 #include <memory>
+#include <iostream>
 
 namespace hnswlib {
 typedef unsigned int tableint;
@@ -682,10 +683,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return size;
     }
 
-    void saveIndex(const std::string &location) {
-        std::ofstream output(location, std::ios::binary);
-        std::streampos position;
 
+    void saveIndex(std::ostream &output) {
         writeBinaryPOD(output, offsetLevel0_);
         writeBinaryPOD(output, max_elements_);
         writeBinaryPOD(output, cur_element_count);
@@ -709,16 +708,17 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             if (linkListSize)
                 output.write(linkLists_[i], linkListSize);
         }
+    }
+
+
+    void saveIndex(const std::string &location) {
+        std::ofstream output(location, std::ios::binary);
+        saveIndex(output);
         output.close();
     }
 
 
-    void loadIndex(const std::string &location, SpaceInterface<dist_t> *s, size_t max_elements_i = 0) {
-        std::ifstream input(location, std::ios::binary);
-
-        if (!input.is_open())
-            throw std::runtime_error("Cannot open file");
-
+    void loadIndex(std::istream &input, SpaceInterface<dist_t> *s, size_t max_elements_i = 0) {
         clear();
         // get file size:
         input.seekg(0, input.end);
@@ -815,6 +815,16 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
                 if (allow_replace_deleted_) deleted_elements.insert(i);
             }
         }
+    }
+
+
+    void loadIndex(const std::string &location, SpaceInterface<dist_t> *s, size_t max_elements_i = 0) {
+        std::ifstream input(location, std::ios::binary);
+
+        if (!input.is_open())
+            throw std::runtime_error("Cannot open file");
+
+        loadIndex(input, s, max_elements_i);
 
         input.close();
 

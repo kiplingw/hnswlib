@@ -4,6 +4,7 @@
 #include <mutex>
 #include <algorithm>
 #include <assert.h>
+#include <iostream>
 
 namespace hnswlib {
 template<typename dist_t>
@@ -135,24 +136,25 @@ class BruteforceSearch : public AlgorithmInterface<dist_t> {
     }
 
 
-    void saveIndex(const std::string &location) {
-        std::ofstream output(location, std::ios::binary);
-        std::streampos position;
-
+    void saveIndex(std::ostream &output) {
         writeBinaryPOD(output, maxelements_);
         writeBinaryPOD(output, size_per_element_);
         writeBinaryPOD(output, cur_element_count);
 
         output.write(data_, maxelements_ * size_per_element_);
+    }
+
+
+    void saveIndex(const std::string &location) {
+        std::ofstream output(location, std::ios::binary);
+
+        saveIndex(output);
 
         output.close();
     }
 
 
-    void loadIndex(const std::string &location, SpaceInterface<dist_t> *s) {
-        std::ifstream input(location, std::ios::binary);
-        std::streampos position;
-
+    void loadIndex(std::istream &input, SpaceInterface<dist_t> *s) {
         readBinaryPOD(input, maxelements_);
         readBinaryPOD(input, size_per_element_);
         readBinaryPOD(input, cur_element_count);
@@ -166,6 +168,13 @@ class BruteforceSearch : public AlgorithmInterface<dist_t> {
             throw std::runtime_error("Not enough memory: loadIndex failed to allocate data");
 
         input.read(data_, maxelements_ * size_per_element_);
+    }
+
+
+    void loadIndex(const std::string &location, SpaceInterface<dist_t> *s) {
+        std::ifstream input(location, std::ios::binary);
+
+        loadIndex(input, s);
 
         input.close();
     }

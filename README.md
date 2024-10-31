@@ -3,6 +3,10 @@ Header-only C++ HNSW implementation with python bindings, insertions and updates
 
 **NEWS:**
 
+**version 0.8.1**
+
+* Added generic serialization / deserialization interfaces for HierarchicalNSW and BruteforceSearch that take `std::ostream` / `std::istream` arguments
+
 **version 0.8.0** 
 
 * Multi-vector document search and epsilon search (for now, only in C++)
